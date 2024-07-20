@@ -1,6 +1,10 @@
 ### ConnWifiMaster
 ConnWifiMaster* is a graphical application developed in Python with PyQt5 for managing WiFi connections on Arch Linux systems using ConnMan. It allows you to view all saved connections, set networks to connect automatically, enter passwords for new networks, and connect or disconnect from available networks in an intuitive and fast manner.
 
+> [!WARNING]
+> This project is a dynamic work in progress. Version 1.0.0, the inaugural stable and fully-featured release, 
+> is on the horizon. While it's not yet recommended for daily use due to potential minor inconveniences,
+> we welcome enthusiasts to help uncover and resolve bugs or propose exciting new features. But if you wanna try, you are more than welcome!
 
 [![Version](https://img.shields.io/github/release/felipealfonsog/ConnWifiMaster.svg?style=flat&color=green)](#)
 [![Main Language](https://img.shields.io/github/languages/top/felipealfonsog/ConnWifiMaster.svg?style=flat&color=blue)](#)
