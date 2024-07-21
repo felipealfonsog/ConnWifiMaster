@@ -1,0 +1,30 @@
+connwifimaster
+
+# Ignore compiled object files
+*.o
+
+# Ignore executable files
+*.out
+*.exe
+*.app
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore logs and databases
+*.log
+*.sqlite
+*.db
+
+# Ignore backup files
+*~
+
+# Ignore specific large files
+large_file_name
+path/to/large_file
+
+# Ignore build directory
+build/
+bin/
+
