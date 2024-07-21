@@ -85,15 +85,13 @@ sudo pacman -S gtk3 connman
 <p align="center">
   <img src="./images/sshot-mac.png" alt="Screenshot macOS" width="400" height="350">
 </p>
-
+-->
 #### Screenshot Linux (Arch)
 
 <p align="center">
-  <img src="./images/sshot-linux.png" alt="Screenshot Linux" width="400" height="350">
+  <img src="./images/cmaster-sshot.png" alt="Screenshot Linux" width="400" height="350">
 </p>
--->
 
-<sub>* Section in progress.</sub>
 
 
 #
