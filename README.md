@@ -93,8 +93,6 @@ sudo pacman -S gtk3 connman
 </p>
 
 
-<sub>* Section in progress.</sub>
-
 
 #
 
