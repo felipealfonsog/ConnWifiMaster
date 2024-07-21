@@ -20,7 +20,7 @@ static void parse_wifi_networks(const char *command, GtkTreeStore *store) {
     char buffer[BUFFER_SIZE];
     while (fgets(buffer, sizeof(buffer), fp)) {
         // Skip lines that don't look like they contain network names
-        if (strstr(buffer, "SSID") == NULL && buffer[0] != '\0') {
+        if (buffer[0] != '\0' && buffer[0] != '-' && strstr(buffer, "SSID") == NULL) {
             GtkTreeIter iter;
             gtk_tree_store_append(store, &iter, NULL);
             gtk_tree_store_set(store, &iter, 0, buffer, 1, FALSE, -1);
