@@ -1,4 +1,9 @@
 ### ConnWifiMaster
+
+<p align="left">
+  <img src="./icons/web/icon-192.png" alt="Screenshot macOS" width="90" height="90">
+</p>
+
 ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. Developed with GTK in C, this tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
 
 Network Management: View and manage all saved WiFi connections.
