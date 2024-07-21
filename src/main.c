@@ -44,9 +44,7 @@ static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path
     gtk_tree_model_get(model, &iter, 0, &network_name, -1);
 
     // Update auto-connect configuration
-    if (auto_connect) {
-        update_auto_connect_configuration(network_name);
-    }
+    update_auto_connect_configuration(network_name);
 
     g_free(network_name);
 }
