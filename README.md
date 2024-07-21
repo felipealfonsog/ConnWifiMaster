@@ -12,6 +12,10 @@ Password Handling: Prompt users to enter passwords when connecting to new networ
 Connection Control: Easily connect to or disconnect from available networks.
 
 
+**ConnWifiMaster is designed to use ConnMan as the default daemon for managing and scanning WiFi networks. However, if ConnMan is not running, the program will check for networks using NetworkManager if that daemon is active.**
+**Additionally, ConnWifiMaster supports macOS, allowing you to manage and scan WiFi networks on Apple devices as well.**
+
+
 > [!WARNING]
 > This project is a dynamic work in progress. Version 1.0.0, the inaugural stable and fully-featured release, 
 > is on the horizon. While it's not yet recommended for daily use due to potential minor inconveniences,
