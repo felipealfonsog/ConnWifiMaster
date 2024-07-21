@@ -1,0 +1,7 @@
+ConnWifiMaster/
+├── src/
+│   ├── main.c
+│   ├── connman.c
+│   └── connman.h
+├── Makefile
+└── README.md

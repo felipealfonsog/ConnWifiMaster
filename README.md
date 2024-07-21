@@ -1,5 +1,11 @@
 ### ConnWifiMaster
-ConnWifiMaster* is a graphical application developed in Python with PyQt5 for managing WiFi connections on Arch Linux systems using ConnMan. It allows you to view all saved connections, set networks to connect automatically, enter passwords for new networks, and connect or disconnect from available networks in an intuitive and fast manner.
+ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. Developed with GTK in C, this tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
+
+Network Management: View and manage all saved WiFi connections.
+Auto-Connect Configuration: Select which networks should connect automatically using checkboxes.
+Password Handling: Prompt users to enter passwords when connecting to new networks.
+Connection Control: Easily connect to or disconnect from available networks.
+
 
 > [!WARNING]
 > This project is a dynamic work in progress. Version 1.0.0, the inaugural stable and fully-featured release, 
@@ -36,23 +42,25 @@ Connect and disconnect networks: Options to connect or disconnect from available
 Auto-connect: connmanctl manages auto-connect configuration based on the network's service_id.
 Passwords: The user interface prompts for a password if required when connecting to a network.
 
+#### Compile
 
+```
+gcc `pkg-config --cflags gtk+-3.0` -o connwifimaster src/main.c src/connman.c `pkg-config --libs gtk+-3.0`
+```
+
+- Explanation:
+
+```
+pkg-config --cflags gtk+-3.0: Retrieves the compiler flags for GTK+ 3.
+-o connwifimaster: Specifies the output executable name.
+src/main.c src/connman.c: Specifies the source files.
+pkg-config --libs gtk+-3.0: Retrieves the linker flags for GTK+ 3.
+This command compiles main.c and connman.c from the src directory and links them with GTK+ 3 to produce the executable connwifimaster.
+```
 
 #### Dependencies 
 
-- ConnMan
-- Python 3
-- PyQt5
-- PyQScintilla2
-- PyYAML
-- PyCrypto
-- PyCryptoDome
-- PyCryptoHash
-
-- Essensials :
-
-sudo pacman -S python-pyqt5 connman
-
+sudo pacman -S gtk3 connman
 
 #
 
