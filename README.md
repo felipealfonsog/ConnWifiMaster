@@ -142,7 +142,7 @@ Or just Copy - Paste in your terminal and use -curl- to start downloading the in
 If you want to use -wget- just copy/paste this line:
 
    ```
-   wget https://github.com/felipealfonsog/GitSyncMaster/raw/main/installer.sh
+   wget https://github.com/felipealfonsog/ConnWifiMaster/raw/main/installer.sh
    ```
 
 
