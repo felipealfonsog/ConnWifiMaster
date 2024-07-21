@@ -29,23 +29,26 @@ static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) 
 static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeStore *store) {
     GtkTreeIter iter;
     GtkTreePath *tree_path = gtk_tree_path_new_from_string(path);
-    gtk_tree_store_get_iter(store, &iter, tree_path);
+    GtkTreeModel *model = GTK_TREE_MODEL(store);
     gboolean auto_connect;
-    gtk_tree_store_get(store, &iter, 1, &auto_connect, -1);
-    auto_connect = !auto_connect;
 
-    gtk_tree_store_set(store, &iter, 1, auto_connect, -1);
+    if (gtk_tree_model_get_iter(model, &iter, tree_path)) {
+        gtk_tree_model_get(model, &iter, 1, &auto_connect, -1);
+        auto_connect = !auto_connect;
 
-    gtk_tree_path_free(tree_path);
+        gtk_tree_store_set(store, &iter, 1, auto_connect, -1);
 
-    // Retrieve network name for auto-connect configuration
-    gchar *network_name;
-    gtk_tree_store_get(store, &iter, 0, &network_name, -1);
+        gtk_tree_path_free(tree_path);
 
-    // Update auto-connect configuration
-    update_auto_connect_configuration(network_name);
+        // Retrieve network name for auto-connect configuration
+        gchar *network_name;
+        gtk_tree_model_get(model, &iter, 0, &network_name, -1);
 
-    g_free(network_name);
+        // Update auto-connect configuration
+        update_auto_connect_configuration(network_name);
+
+        g_free(network_name);
+    }
 }
 
 static GtkWidget* create_main_window() {
