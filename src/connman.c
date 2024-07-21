@@ -19,6 +19,9 @@ static void parse_wifi_networks(const char *command, GtkTreeStore *store) {
 
     char buffer[BUFFER_SIZE];
     while (fgets(buffer, sizeof(buffer), fp)) {
+        // Debug print to check the buffer content
+        printf("Buffer: %s", buffer);
+
         // Skip lines that don't look like they contain network names
         if (buffer[0] != '\0' && buffer[0] != '-' && strstr(buffer, "SSID") == NULL) {
             GtkTreeIter iter;
@@ -65,7 +68,7 @@ void prompt_for_password_and_connect(const gchar *network_name) {
         const gchar *password = gtk_entry_get_text(GTK_ENTRY(password_entry));
         // Connect using the appropriate command with the password
         char command[BUFFER_SIZE];
-        snprintf(command, sizeof(command), "connmanctl connect %s %s", network_name, password);
+        snprintf(command, sizeof(command), "nmcli dev wifi connect '%s' password '%s'", network_name, password);
         system(command);
     }
 
@@ -75,6 +78,6 @@ void prompt_for_password_and_connect(const gchar *network_name) {
 void update_auto_connect_configuration(const gchar *network_name) {
     // Placeholder for actual auto-connect configuration
     char command[BUFFER_SIZE];
-    snprintf(command, sizeof(command), "connmanctl enable %s", network_name);
+    snprintf(command, sizeof(command), "nmcli connection modify '%s' connection.autoconnect yes", network_name);
     system(command);
 }
