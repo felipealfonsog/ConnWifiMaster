@@ -60,7 +60,9 @@ This command compiles main.c and connman.c from the src directory and links them
 
 #### Dependencies 
 
+```
 sudo pacman -S gtk3 connman
+```
 
 #
 
