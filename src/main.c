@@ -1,13 +1,20 @@
 #include <gtk/gtk.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "connman.h"
+#include <unistd.h>
 
-// Function prototypes
-static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview);
-static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeStore *store);
-static GtkWidget* create_main_window();
+#define AIRPORT_PATH "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+
+static void update_auto_connect_configuration(const gchar *network_name) {
+    // Implementar configuración de auto-conexión según la red.
+    printf("Updating auto-connect for network: %s\n", network_name);
+}
+
+static void prompt_for_password_and_connect(const gchar *network_name) {
+    // Implementar la lógica para pedir la contraseña y conectar a la red.
+    printf("Prompting for password and connecting to network: %s\n", network_name);
+}
 
 static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) {
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
@@ -85,15 +92,64 @@ static GtkWidget* create_main_window() {
     return window;
 }
 
+static void scan_wifi_arch() {
+    FILE *fp = popen("nmcli -f SSID dev wifi", "r");
+    if (fp == NULL) {
+        perror("Failed to run nmcli command");
+        return;
+    }
+
+    char buffer[256];
+    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
+    GtkTreeIter iter;
+
+    while (fgets(buffer, sizeof(buffer) - 1, fp) != NULL) {
+        if (buffer[0] != '\0' && buffer[0] != 'S') { // Skip header line
+            gchar *ssid = strtok(buffer, "\n");
+            gtk_tree_store_append(store, &iter, NULL);
+            gtk_tree_store_set(store, &iter, 0, ssid, 1, FALSE, -1);
+        }
+    }
+
+    pclose(fp);
+}
+
+static void scan_wifi_macos() {
+    char buffer[128];
+    FILE *fp = popen(AIRPORT_PATH " -s", "r");
+    if (fp == NULL) {
+        perror("Failed to run airport command");
+        return;
+    }
+
+    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
+    GtkTreeIter iter;
+
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        if (buffer[0] != '\0' && buffer[0] != 'S') { // Skip header line
+            gchar *ssid = strtok(buffer, "\n");
+            gtk_tree_store_append(store, &iter, NULL);
+            gtk_tree_store_set(store, &iter, 0, ssid, 1, FALSE, -1);
+        }
+    }
+
+    pclose(fp);
+}
+
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
 
     GtkWidget *window = create_main_window();
     gtk_widget_show_all(window);
 
-    // Load saved networks
-    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(window)));
-    load_saved_networks(store);
+    // Detect and scan WiFi networks based on system
+    if (system("connmanctl services > /dev/null 2>&1") == 0) {
+        scan_wifi_arch(); // Arch Linux
+    } else if (system("nmcli -f SSID dev wifi > /dev/null 2>&1") == 0) {
+        scan_wifi_arch(); // NetworkManager
+    } else {
+        scan_wifi_macos(); // macOS
+    }
 
     gtk_main();
     return 0;
