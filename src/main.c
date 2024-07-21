@@ -4,6 +4,11 @@
 #include <string.h>
 #include "connman.h"
 
+// Function prototypes
+static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview);
+static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *treeview);
+static GtkWidget* create_main_window();
+
 static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) {
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeIter iter;
@@ -34,8 +39,14 @@ static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path
 
     gtk_tree_path_free(tree_path);
 
+    // Retrieve network name for auto-connect configuration
+    gchar *network_name;
+    gtk_tree_model_get(model, &iter, 0, &network_name, -1);
+
     // Update auto-connect configuration
-    update_auto_connect_configuration(gtk_tree_model_get_string(model, &iter));
+    update_auto_connect_configuration(network_name);
+
+    g_free(network_name);
 }
 
 static GtkWidget* create_main_window() {
