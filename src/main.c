@@ -5,11 +5,12 @@
 #include "connman.h"
 
 // Function prototypes
-static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview);
-static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *treeview);
+static void on_connect_button_clicked(GtkButton *button, gpointer user_data);
+static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, gpointer user_data);
 static GtkWidget* create_main_window();
 
-static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) {
+static void on_connect_button_clicked(GtkButton *button, gpointer user_data) {
+    GtkTreeView *treeview = GTK_TREE_VIEW(user_data);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeIter iter;
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
@@ -26,7 +27,8 @@ static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) 
     }
 }
 
-static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *treeview) {
+static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, gpointer user_data) {
+    GtkTreeView *treeview = GTK_TREE_VIEW(user_data);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeIter iter;
     GtkTreePath *tree_path = gtk_tree_path_new_from_string(path);
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]) {
     gtk_widget_show_all(window);
 
     // Load saved networks
-    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(window)));
+    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(window)))));
     load_saved_networks(store);
 
     gtk_main();
