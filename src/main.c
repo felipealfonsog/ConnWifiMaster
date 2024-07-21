@@ -95,7 +95,7 @@ static GtkWidget* create_main_window() {
 }
 
 static void scan_wifi_arch(GtkTreeView *treeview) {
-    FILE *fp = popen("nmcli -f SSID dev wifi", "r");
+    FILE *fp = popen("nmcli -f SSID,IN-USE dev wifi", "r");
     if (fp == NULL) {
         perror("Failed to run nmcli command");
         return;
@@ -104,17 +104,23 @@ static void scan_wifi_arch(GtkTreeView *treeview) {
     char buffer[256];
     GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(treeview));
     GtkTreeIter iter;
+    gboolean in_use;
 
     while (fgets(buffer, sizeof(buffer) - 1, fp) != NULL) {
         if (buffer[0] != '\0' && buffer[0] != 'S') { // Skip header line
-            gchar *ssid = strtok(buffer, "\n");
+            char *ssid = strtok(buffer, " \n");
+            char *in_use_str = strtok(NULL, " \n");
+
+            in_use = (in_use_str != NULL && strcmp(in_use_str, "[*]") == 0);
+
             gtk_tree_store_append(store, &iter, NULL);
-            gtk_tree_store_set(store, &iter, 0, ssid, 1, FALSE, -1);
+            gtk_tree_store_set(store, &iter, 0, ssid, 1, in_use, -1);
         }
     }
 
     pclose(fp);
 }
+
 
 static void scan_wifi_macos(GtkTreeView *treeview) {
     char buffer[128];
