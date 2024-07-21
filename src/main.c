@@ -35,8 +35,7 @@ static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path
     gtk_tree_model_get(model, &iter, 1, &auto_connect, -1);
     auto_connect = !auto_connect;
 
-    GtkTreeStore *store = GTK_TREE_STORE(model); // Cast the model to GtkTreeStore
-    gtk_tree_store_set(store, &iter, 1, auto_connect, -1);
+    gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 1, auto_connect, -1);
 
     gtk_tree_path_free(tree_path);
 
@@ -45,7 +44,9 @@ static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path
     gtk_tree_model_get(model, &iter, 0, &network_name, -1);
 
     // Update auto-connect configuration
-    update_auto_connect_configuration(network_name);
+    if (auto_connect) {
+        update_auto_connect_configuration(network_name);
+    }
 
     g_free(network_name);
 }
