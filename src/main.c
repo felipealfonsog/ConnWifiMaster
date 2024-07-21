@@ -6,7 +6,7 @@
 
 // Function prototypes
 static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview);
-static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeStore *store);
+static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *treeview);
 static GtkWidget* create_main_window();
 
 static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) {
@@ -19,27 +19,32 @@ static void on_connect_button_clicked(GtkButton *button, GtkTreeView *treeview) 
         gchar *network_name;
         gtk_tree_model_get(model, &iter, 0, &network_name, -1);
 
+        // Prompt for password if needed and connect
         prompt_for_password_and_connect(network_name);
 
         g_free(network_name);
     }
 }
 
-static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeStore *store) {
+static void on_auto_connect_toggled(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *treeview) {
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeIter iter;
     GtkTreePath *tree_path = gtk_tree_path_new_from_string(path);
-    gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tree_path);
+    gtk_tree_model_get_iter(model, &iter, tree_path);
     gboolean auto_connect;
-    gtk_tree_model_get(store, &iter, 1, &auto_connect, -1);
+    gtk_tree_model_get(model, &iter, 1, &auto_connect, -1);
     auto_connect = !auto_connect;
 
+    GtkTreeStore *store = GTK_TREE_STORE(model); // Cast the model to GtkTreeStore
     gtk_tree_store_set(store, &iter, 1, auto_connect, -1);
 
     gtk_tree_path_free(tree_path);
 
+    // Retrieve network name for auto-connect configuration
     gchar *network_name;
-    gtk_tree_model_get(store, &iter, 0, &network_name, -1);
+    gtk_tree_model_get(model, &iter, 0, &network_name, -1);
 
+    // Update auto-connect configuration
     update_auto_connect_configuration(network_name);
 
     g_free(network_name);
@@ -66,7 +71,7 @@ static GtkWidget* create_main_window() {
     GtkTreeViewColumn *toggle_column = gtk_tree_view_column_new_with_attributes("Auto-Connect", toggle_renderer, "active", 1, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), toggle_column);
 
-    g_signal_connect(toggle_renderer, "toggled", G_CALLBACK(on_auto_connect_toggled), store);
+    g_signal_connect(toggle_renderer, "toggled", G_CALLBACK(on_auto_connect_toggled), treeview);
 
     gtk_box_pack_start(GTK_BOX(vbox), treeview, TRUE, TRUE, 0);
 
@@ -85,6 +90,7 @@ int main(int argc, char *argv[]) {
     GtkWidget *window = create_main_window();
     gtk_widget_show_all(window);
 
+    // Load saved networks
     GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(window)));
     load_saved_networks(store);
 
