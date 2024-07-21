@@ -6,116 +6,85 @@
 
 #define BUFFER_SIZE 1024
 
-// Function prototypes
-static gboolean execute_command(const char *command, char *output, size_t output_size);
-static void scan_with_connman(GtkTreeStore *store);
-static void scan_with_networkmanager(GtkTreeStore *store);
-static void scan_with_mac_wifi(GtkTreeStore *store);
+// Verifica si connmanctl está disponible
+static gboolean is_connman_available() {
+    return access("/usr/bin/connmanctl", X_OK) == 0;
+}
 
+// Verifica si nmcli está disponible
+static gboolean is_networkmanager_available() {
+    return access("/usr/bin/nmcli", X_OK) == 0;
+}
+
+// Verifica si el sistema es macOS
+static gboolean is_macos() {
+    return access("/usr/sbin/airport", X_OK) == 0;
+}
+
+// Carga redes guardadas según el sistema de gestión de redes detectado
 void load_saved_networks(GtkTreeStore *store) {
-    // Try ConnMan first
-    if (access("/usr/bin/connmanctl", X_OK) == 0) {
-        scan_with_connman(store);
-    }
-    // Try NetworkManager if ConnMan is not available
-    else if (access("/usr/bin/nmcli", X_OK) == 0) {
-        scan_with_networkmanager(store);
-    }
-    // Fallback to macOS WiFi scan
-    else {
-        scan_with_mac_wifi(store);
-    }
-}
+    if (is_connman_available()) {
+        FILE *fp = popen("connmanctl services", "r");
+        if (fp == NULL) {
+            perror("popen");
+            return;
+        }
 
-static gboolean execute_command(const char *command, char *output, size_t output_size) {
-    FILE *fp = popen(command, "r");
-    if (fp == NULL) {
-        perror("popen");
-        return FALSE;
-    }
-
-    size_t len = fread(output, 1, output_size - 1, fp);
-    if (len == (size_t)-1) {
-        perror("fread");
+        char buffer[BUFFER_SIZE];
+        while (fgets(buffer, sizeof(buffer), fp)) {
+            if (strstr(buffer, "Wifi")) {
+                GtkTreeIter iter;
+                gtk_tree_store_append(store, &iter, NULL);
+                gtk_tree_store_set(store, &iter, 0, buffer, 1, FALSE, -1);
+            }
+        }
         pclose(fp);
-        return FALSE;
-    }
+    } else if (is_networkmanager_available()) {
+        FILE *fp = popen("nmcli -f SSID dev wifi", "r");
+        if (fp == NULL) {
+            perror("popen");
+            return;
+        }
 
-    output[len] = '\0'; // Null-terminate the output
-    pclose(fp);
-    return TRUE;
-}
-
-static void scan_with_connman(GtkTreeStore *store) {
-    char buffer[BUFFER_SIZE];
-    if (execute_command("connmanctl services", buffer, sizeof(buffer))) {
-        char *line = strtok(buffer, "\n");
-        while (line != NULL) {
-            if (strstr(line, "Wifi")) {
+        char buffer[BUFFER_SIZE];
+        while (fgets(buffer, sizeof(buffer), fp)) {
+            if (buffer[0] != '\n') {
                 GtkTreeIter iter;
                 gtk_tree_store_append(store, &iter, NULL);
-                gtk_tree_store_set(store, &iter, 0, line, 1, FALSE, -1);
+                gtk_tree_store_set(store, &iter, 0, buffer, 1, FALSE, -1);
             }
-            line = strtok(NULL, "\n");
         }
-    }
-}
+        pclose(fp);
+    } else if (is_macos()) {
+        FILE *fp = popen("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s", "r");
+        if (fp == NULL) {
+            perror("popen");
+            return;
+        }
 
-static void scan_with_networkmanager(GtkTreeStore *store) {
-    char buffer[BUFFER_SIZE];
-    if (execute_command("nmcli -f SSID,ACTIVE dev wifi", buffer, sizeof(buffer))) {
-        char *line = strtok(buffer, "\n");
-        while (line != NULL) {
-            if (strstr(line, "SSID")) { // Skip header
-                line = strtok(NULL, "\n");
-                continue;
+        char buffer[BUFFER_SIZE];
+        while (fgets(buffer, sizeof(buffer), fp)) {
+            if (strstr(buffer, "SSID")) {
+                continue; // Omitir el encabezado
             }
             GtkTreeIter iter;
             gtk_tree_store_append(store, &iter, NULL);
-            gtk_tree_store_set(store, &iter, 0, line, 1, FALSE, -1);
-            line = strtok(NULL, "\n");
+            gtk_tree_store_set(store, &iter, 0, buffer, 1, FALSE, -1);
         }
+        pclose(fp);
     }
 }
 
-static void scan_with_mac_wifi(GtkTreeStore *store) {
-    char buffer[BUFFER_SIZE];
-    // Try using airport first
-    if (execute_command("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s", buffer, sizeof(buffer))) {
-        char *line = strtok(buffer, "\n");
-        while (line != NULL) {
-            if (strstr(line, "SSID")) { // Skip header
-                line = strtok(NULL, "\n");
-                continue;
-            }
-            GtkTreeIter iter;
-            gtk_tree_store_append(store, &iter, NULL);
-            gtk_tree_store_set(store, &iter, 0, line, 1, FALSE, -1);
-            line = strtok(NULL, "\n");
-        }
-    } else {
-        // Try using wdutil if airport is deprecated or not working
-        if (execute_command("wdutil -list", buffer, sizeof(buffer))) {
-            char *line = strtok(buffer, "\n");
-            while (line != NULL) {
-                GtkTreeIter iter;
-                gtk_tree_store_append(store, &iter, NULL);
-                gtk_tree_store_set(store, &iter, 0, line, 1, FALSE, -1);
-                line = strtok(NULL, "\n");
-            }
-        }
-    }
-}
-
+// Muestra un diálogo para ingresar la contraseña y conectar
 void prompt_for_password_and_connect(const gchar *network_name) {
     GtkWidget *dialog;
     GtkWidget *password_entry;
     GtkWidget *content_area;
     GtkResponseType result;
 
-    dialog = gtk_dialog_new_with_buttons("Enter Password", NULL, GTK_DIALOG_MODAL, 
-                                         ("Cancel"), GTK_RESPONSE_CANCEL, 
-                                         ("Connect"), GTK_RESPONSE_ACCEPT, 
+    dialog = gtk_dialog_new_with_buttons("Enter Password", NULL, GTK_DIALOG_MODAL,
+                                         ("Cancel"), GTK_RESPONSE_CANCEL,
+                                         ("Connect"), GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -128,7 +97,6 @@ void prompt_for_password_and_connect(const gchar *network_name) {
 
     if (result == GTK_RESPONSE_ACCEPT) {
         const gchar *password = gtk_entry_get_text(GTK_ENTRY(password_entry));
-        // Connect using connmanctl with password
         char command[BUFFER_SIZE];
         snprintf(command, sizeof(command), "connmanctl connect %s %s", network_name, password);
         system(command);
@@ -137,8 +105,8 @@ void prompt_for_password_and_connect(const gchar *network_name) {
     gtk_widget_destroy(dialog);
 }
 
+// Actualiza la configuración de auto-conexión
 void update_auto_connect_configuration(const gchar *network_name) {
-    // Placeholder for actual auto-connect configuration
     char command[BUFFER_SIZE];
     snprintf(command, sizeof(command), "connmanctl enable %s", network_name);
     system(command);
