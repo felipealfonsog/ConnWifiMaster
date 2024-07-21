@@ -6,6 +6,8 @@
 
 #define AIRPORT_PATH "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 
+static GtkWidget *treeview; // Declarar treeview globalmente para que sea accesible
+
 static void update_auto_connect_configuration(const gchar *network_name) {
     // Implementar configuración de auto-conexión según la red.
     printf("Updating auto-connect for network: %s\n", network_name);
@@ -66,7 +68,7 @@ static GtkWidget* create_main_window() {
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
-    GtkWidget *treeview = gtk_tree_view_new();
+    treeview = gtk_tree_view_new();
     GtkTreeStore *store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_BOOLEAN);
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(store));
 
@@ -92,7 +94,7 @@ static GtkWidget* create_main_window() {
     return window;
 }
 
-static void scan_wifi_arch() {
+static void scan_wifi_arch(GtkTreeView *treeview) {
     FILE *fp = popen("nmcli -f SSID dev wifi", "r");
     if (fp == NULL) {
         perror("Failed to run nmcli command");
@@ -100,7 +102,7 @@ static void scan_wifi_arch() {
     }
 
     char buffer[256];
-    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
+    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(treeview));
     GtkTreeIter iter;
 
     while (fgets(buffer, sizeof(buffer) - 1, fp) != NULL) {
@@ -114,7 +116,7 @@ static void scan_wifi_arch() {
     pclose(fp);
 }
 
-static void scan_wifi_macos() {
+static void scan_wifi_macos(GtkTreeView *treeview) {
     char buffer[128];
     FILE *fp = popen(AIRPORT_PATH " -s", "r");
     if (fp == NULL) {
@@ -122,7 +124,7 @@ static void scan_wifi_macos() {
         return;
     }
 
-    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
+    GtkTreeStore *store = GTK_TREE_STORE(gtk_tree_view_get_model(treeview));
     GtkTreeIter iter;
 
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
@@ -144,11 +146,11 @@ int main(int argc, char *argv[]) {
 
     // Detect and scan WiFi networks based on system
     if (system("connmanctl services > /dev/null 2>&1") == 0) {
-        scan_wifi_arch(); // Arch Linux
+        scan_wifi_arch(GTK_TREE_VIEW(treeview)); // Arch Linux
     } else if (system("nmcli -f SSID dev wifi > /dev/null 2>&1") == 0) {
-        scan_wifi_arch(); // NetworkManager
+        scan_wifi_arch(GTK_TREE_VIEW(treeview)); // NetworkManager
     } else {
-        scan_wifi_macos(); // macOS
+        scan_wifi_macos(GTK_TREE_VIEW(treeview)); // macOS
     }
 
     gtk_main();
