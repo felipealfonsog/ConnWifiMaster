@@ -3,8 +3,9 @@
 
 #include <gtk/gtk.h>
 
-void load_saved_networks(GtkTreeStore *store);
-void prompt_for_password_and_connect(const gchar *network_name);
-void update_auto_connect_configuration(const gchar *network_name);
+void load_wifi_networks(GtkListStore *store);
+void connect_to_network(GtkWindow *parent, const gchar *service);
+void disconnect_from_network(const gchar *service);
+void set_autoconnect(const gchar *service, gboolean autoconnect);
 
 #endif // CONNMAN_H
