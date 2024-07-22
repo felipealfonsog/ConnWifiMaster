@@ -40,6 +40,28 @@ Connection Control: Easily connect to or disconnect from available networks.
 
 <sub>* This is currently an experimental phase where the primary focus is on making the system functional and establishing a practical and logical pathway that aligns with both my vision and the project's goals. It might contain errors, bugs, etc. Many other non-core elements of the project are considered secondary. Project in progress.</sub>
 
+#
+
+#### Bash program - for terminals
+
+<p align="center">
+  <img src="./images/connmaster-bash.png" alt="Screenshot Linux" width="400" height="350">
+</p>
+
+- Download the bash file:
+
+   ```
+   curl -O https://raw.githubusercontent.com/felipealfonsog/ConnWifiMaster/main/Connmaster.sh
+   ```
+
+   If you want to use -wget- just copy/paste this line:
+
+   ```
+   wget https://github.com/felipealfonsog/ConnWifiMaster/raw/main/Connmaster.sh
+   ```
+
+
+#
 
 #### Feature Summary
 Display all saved WiFi connections: The application lists all available and saved connections.
