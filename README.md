@@ -97,6 +97,11 @@ sudo pacman -S python-pyqt5 python connman
   <img src="./images/cmaster-sshot.png" alt="Screenshot Linux" width="400" height="350">
 </p>
 
+#### Screenshot Linux (Arch) - Python Version
+
+<p align="center">
+  <img src="./images/connman-only-arch.png" alt="Screenshot Linux" width="400" height="350">
+</p>
 
 
 #
