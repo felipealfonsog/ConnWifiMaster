@@ -60,6 +60,15 @@ Connection Control: Easily connect to or disconnect from available networks.
    wget https://github.com/felipealfonsog/ConnWifiMaster/raw/main/Connmaster.sh
    ```
 
+- Execute it:
+
+   ```
+   chmod +x Connmaster.sh
+   ```
+   
+   ```
+   ./Connmaster.sh
+   ```
 
 #
 
