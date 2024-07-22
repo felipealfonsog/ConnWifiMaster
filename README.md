@@ -4,17 +4,17 @@
   <img src="./icons/web/icon-192.png" alt="Screenshot macOS" width="90" height="90">
 </p>
 
-ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. Developed with GTK in C, this tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
+ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. This tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
 
 Network Management: View and manage all saved WiFi connections.
 Auto-Connect Configuration: Select which networks should connect automatically using checkboxes.
 Password Handling: Prompt users to enter passwords when connecting to new networks.
 Connection Control: Easily connect to or disconnect from available networks.
 
-
+<!-- 
 **ConnWifiMaster is designed to use ConnMan as the default daemon for managing and scanning WiFi networks. However, if ConnMan is not running, the program will check for networks using NetworkManager if that daemon is active.**
 **Additionally, ConnWifiMaster supports macOS, allowing you to manage and scan WiFi networks on Apple devices as well.**
-
+-->
 
 > [!WARNING]
 > This project is a dynamic work in progress. Version 1.0.0, the inaugural stable and fully-featured release, 
@@ -51,7 +51,7 @@ Connect and disconnect networks: Options to connect or disconnect from available
 Auto-connect: connmanctl manages auto-connect configuration based on the network's service_id.
 Passwords: The user interface prompts for a password if required when connecting to a network.
 
-#### Compile
+#### Compile in C
 
 ```
 gcc `pkg-config --cflags gtk+-3.0` -o connwifimaster src/main.c src/connman.c `pkg-config --libs gtk+-3.0`
@@ -73,6 +73,11 @@ This command compiles main.c and connman.c from the src directory and links them
 sudo pacman -S gtk3 connman
 ```
 
+```
+sudo pacman -S python-pyqt5 python connman
+```
+
+
 #
 
 #### Screenshots*
@@ -86,12 +91,17 @@ sudo pacman -S gtk3 connman
   <img src="./images/sshot-mac.png" alt="Screenshot macOS" width="400" height="350">
 </p>
 -->
-#### Screenshot Linux (Arch)
+#### Screenshot Linux (Arch) - C Version 
 
 <p align="center">
   <img src="./images/cmaster-sshot.png" alt="Screenshot Linux" width="400" height="350">
 </p>
 
+#### Screenshot Linux (Arch) - Python Version
+
+<p align="center">
+  <img src="./images/connman-only-arch.png" alt="Screenshot Linux" width="400" height="350">
+</p>
 
 
 #

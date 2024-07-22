@@ -1,19 +1,14 @@
 CC = gcc
 CFLAGS = `pkg-config --cflags gtk+-3.0`
-LIBS = `pkg-config --libs gtk+-3.0`
-SRC_DIR = src
+LDFLAGS = `pkg-config --libs gtk+-3.0`
 TARGET = connwifimaster
+SRC_DIR = src
+SRC = $(SRC_DIR)/main.c $(SRC_DIR)/connman.c
 
 all: $(TARGET)
 
-$(TARGET): $(SRC_DIR)/main.o $(SRC_DIR)/connman.o
-	$(CC) -o $@ $^ $(LIBS)
-
-$(SRC_DIR)/main.o: $(SRC_DIR)/main.c $(SRC_DIR)/connman.h
-	$(CC) -c $(SRC_DIR)/main.c $(CFLAGS) -o $(SRC_DIR)/main.o
-
-$(SRC_DIR)/connman.o: $(SRC_DIR)/connman.c $(SRC_DIR)/connman.h
-	$(CC) -c $(SRC_DIR)/connman.c $(CFLAGS) -o $(SRC_DIR)/connman.o
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LDFLAGS)
 
 clean:
-	rm -f $(SRC_DIR)/*.o $(TARGET)
+	rm -f $(TARGET)
