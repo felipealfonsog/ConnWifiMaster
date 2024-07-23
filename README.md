@@ -80,6 +80,9 @@ You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
   <img src="./images/connmaster-bash.png" alt="Screenshot Linux" width="400" height="350">
 </p>
 
+<sub>* This project is still under development. Future updates may include changes, and screenshots may not accurately reflect the final design.</sub>
+
+
 - Download the bash file:
 
    ```
@@ -101,7 +104,7 @@ You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
    ```
    ./Connmaster-CLI.sh
    ```
-<sub>* This project is still under development. Future updates may include changes, and screenshots may not accurately reflect the final design.</sub>
+
 
 #
 
