@@ -4,12 +4,13 @@
   <img src="./icons/web/icon-192.png" alt="Screenshot macOS" width="90" height="90">
 </p>
 
-ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. This tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
+ConnWifiMaster is a GUI & CLI application designed for Arch Linux systems that use ConnMan for network management. This tool provides a user-friendly interface to efficiently handle WiFi connections. It features:
 
 Network Management: View and manage all saved WiFi connections.
 Auto-Connect Configuration: Select which networks should connect automatically using checkboxes.
 Password Handling: Prompt users to enter passwords when connecting to new networks.
 Connection Control: Easily connect to or disconnect from available networks.
+And many more options! 
 
 <!-- 
 **ConnWifiMaster is designed to use ConnMan as the default daemon for managing and scanning WiFi networks. However, if ConnMan is not running, the program will check for networks using NetworkManager if that daemon is active.**
