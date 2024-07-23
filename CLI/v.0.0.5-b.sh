@@ -24,7 +24,7 @@ scan_networks() {
     IFS=$'\n' read -r -d '' -a raw_networks < <(connmanctl services | grep wifi && printf '\0')
 
     echo "Available networks:"
-    > "$CONFIG_FILE" # Clear the configuration file only if it is empty
+    > "$CONFIG_FILE" # Clear the configuration file
 
     for raw_network in "${raw_networks[@]}"; do
         ssid=$(echo "$raw_network" | awk -F' - ' '{print $1}' | xargs) # Extract SSID
@@ -41,10 +41,8 @@ scan_networks() {
         # Print the result formatted
         printf "%-40s - %s\n" "$ssid" "$network_id"
 
-        # Save network ID to configuration file only if it's not already saved
-        if ! grep -q "^$network_id," "$CONFIG_FILE"; then
-            echo "$network_id," >> "$CONFIG_FILE"
-        fi
+        # Save network ID to configuration file
+        echo "$network_id," >> "$CONFIG_FILE"
     done
 }
 
@@ -74,9 +72,9 @@ connect_network() {
     read -s password
 
     if [ -z "$password" ]; then
-        connmanctl connect "$network_id"
+        connmanctl connect $network_id
     else
-        connmanctl tether wifi "$network_id" "$password"
+        connmanctl tether wifi "$network_id" $password
     fi
 
     # Check if the operation was successful
@@ -163,9 +161,9 @@ connect_saved_network() {
         echo "Attempting to connect to saved network: $network_id"
         
         if [ -z "$password" ]; then
-            connmanctl connect "$network_id"
+            connmanctl connect $network_id
         else
-            connmanctl tether wifi "$network_id" "$password"
+            connmanctl tether wifi $network_id $password
         fi
 
         # Check if connection was successful
@@ -241,4 +239,3 @@ while true; do
             ;;
     esac
 done
-
