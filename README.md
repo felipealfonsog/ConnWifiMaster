@@ -42,6 +42,37 @@ Connection Control: Easily connect to or disconnect from available networks.
 
 #
 
+#### Installation (CLI version for Arch Linux)*
+#### Via AUR using YAY
+
+[![AUR](https://img.shields.io/aur/version/connmaster-cli)](https://aur.archlinux.org/packages/connmaster-cli)
+
+<!-- 
+[![AUR](https://img.shields.io/aur/version/connmaster-cli.svg)](https://aur.archlinux.org/packages/connmaster-cli)
+-->
+
+<!-- 
+https://aur.archlinux.org/packages/connmaster-cli
+-->
+
+ConnWifiMaster CLI (connmaster-cli on AUR) is available on AUR (Arch User Repository), and it can be installed using the `yay` package manager. Follow the steps below to install:
+
+1. Make sure you have `yay` installed. If not, you can install it with the following command:
+   
+   ```
+   sudo pacman -S yay
+   ```
+   Once yay is installed, you can install it by running the following command:
+   
+   ```
+   yay -S connmaster-cli
+   ```
+This command will automatically fetch the package from AUR and handle the installation process for you.
+You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
+
+
+#
+
 #### Bash program - for terminals
 
 <p align="center">
