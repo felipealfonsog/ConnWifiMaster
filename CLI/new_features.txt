@@ -1,0 +1,9 @@
+1. Scan WiFi networks
+2. Connect to a WiFi network
+3. Connect to autoconnect or next saved network
+4. Disconnect from a WiFi network
+5. Configure autoconnect for a WiFi network
+6. Remove autoconnect configuration from a WiFi network
+7. List connected networks
+8. Credits
+9. Exit
