@@ -80,13 +80,13 @@ function remove_autoconnect() {
 
 # Function to display credits
 function display_credits() {
-    echo "****************************************"
+    echo "----------------------------------------"
     echo "ConnWifiMaster - ConnMan Network Manager"
     echo "----------------------------------------"
     echo "By Computer Science Engineer: "
     echo "Felipe Alfonso González"
     echo "f.alfonso@res-ear.ch - github.com/felipealfonsog"
-    echo "****************************************"
+    echo "----------------------------------------"
 }
 
 # Create config file if it doesn't exist
@@ -98,7 +98,6 @@ fi
 while true; do
     echo "----------------------------------------"
     echo "ConnMan CLI - Network Manager"
-    echo "----------------------------------------"
     echo "1. Scan WiFi networks"
     echo "2. Connect to a WiFi network"
     echo "3. Disconnect from a WiFi network"
