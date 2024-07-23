@@ -1,4 +1,4 @@
-### ConnWifiMaster
+### ConnWifiMaster (GUI & CLI)
 
 <p align="left">
   <img src="./icons/web/icon-192.png" alt="Screenshot macOS" width="90" height="90">
@@ -51,23 +51,23 @@ Connection Control: Easily connect to or disconnect from available networks.
 - Download the bash file:
 
    ```
-   curl -O https://raw.githubusercontent.com/felipealfonsog/ConnWifiMaster/main/Connmaster.sh
+   curl -O https://raw.githubusercontent.com/felipealfonsog/ConnWifiMaster/main/CLI/Connmaster-CLI.sh
    ```
 
    If you want to use -wget- just copy/paste this line:
 
    ```
-   wget https://github.com/felipealfonsog/ConnWifiMaster/raw/main/Connmaster.sh
+   wget https://github.com/felipealfonsog/ConnWifiMaster/raw/main/CLI/Connmaster-CLI.sh
    ```
 
 - Execute it:
 
    ```
-   chmod +x Connmaster.sh
+   chmod +x Connmaster-CLI.sh
    ```
    
    ```
-   ./Connmaster.sh
+   ./Connmaster-CLI.sh
    ```
 
 #
