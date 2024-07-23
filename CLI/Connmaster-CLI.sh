@@ -2,6 +2,55 @@
 
 CONFIG_FILE="$HOME/.connman_networks"
 
+# Function to check if ConnMan is active and running
+function check_connman() {
+    systemctl is-active --quiet connman
+    if [ $? -ne 0 ]; then
+        echo -n "ConnMan is not active. Do you want to start it? (y/n) [y]: "
+        read start_connman
+        start_connman=${start_connman:-y}
+        if [ "$start_connman" = "y" ]; then
+            sudo systemctl start connman
+            if [ $? -ne 0 ]; then
+                echo "Failed to start ConnMan. Please check your system configuration."
+                exit 1
+            fi
+            echo "ConnMan started successfully."
+        else
+            echo "ConnMan is required for this script to function. Exiting."
+            exit 1
+        fi
+    fi
+}
+
+# Function to connect to an autoconnect network
+function connect_autoconnect_network() {
+    autoconnect_network_id=$(grep ',yes$' "$CONFIG_FILE" | cut -d ',' -f 1)
+    if [ -n "$autoconnect_network_id" ]; then
+        echo "Connecting to autoconnect network $autoconnect_network_id..."
+        connmanctl connect "$autoconnect_network_id"
+        if [ $? -ne 0 ]; then
+            echo "Failed to connect to autoconnect network."
+        else
+            echo "Connected to autoconnect network."
+        fi
+    else
+        echo "No autoconnect network found. Attempting to connect to another saved network..."
+        saved_network_id=$(head -n 1 "$CONFIG_FILE" | cut -d ',' -f 1)
+        if [ -n "$saved_network_id" ]; then
+            echo "Connecting to saved network $saved_network_id..."
+            connmanctl connect "$saved_network_id"
+            if [ $? -ne 0 ]; then
+                echo "Failed to connect to saved network."
+            else
+                echo "Connected to saved network."
+            fi
+        else
+            echo "No saved networks found."
+        fi
+    fi
+}
+
 # Function to scan and list WiFi networks
 function scan_networks() {
     echo "Scanning WiFi networks..."
@@ -16,19 +65,6 @@ function get_network_id() {
     echo "$network_id"
 }
 
-# Function to check if the network is already configured
-function is_network_configured() {
-    network_id=$1
-    grep -q "$network_id" "$CONFIG_FILE"
-    return $?
-}
-
-# Function to get the password for a configured network
-function get_stored_password() {
-    network_id=$1
-    grep "$network_id" "$CONFIG_FILE" | awk -F, '{print $2}'
-}
-
 # Function to connect to a WiFi network
 function connect_network() {
     echo "Enter the WiFi network name (SSID):"
@@ -41,13 +77,13 @@ function connect_network() {
         return
     fi
 
-    # Check if the network is already configured
-    if is_network_configured "$network_id"; then
-        stored_password=$(get_stored_password "$network_id")
-        echo "Network already configured. Using stored password."
+    # Check if network is already configured with a password
+    if grep -q "^$network_id," "$CONFIG_FILE"; then
+        password=$(grep "^$network_id," "$CONFIG_FILE" | cut -d ',' -f 2)
+        autoconnect=$(grep "^$network_id," "$CONFIG_FILE" | cut -d ',' -f 3)
         echo "Connecting to $network_id..."
         connmanctl connect "$network_id"
-        echo "Connected now"
+        echo "Connected to $ssid"
     else
         echo "Enter the password (leave blank if none):"
         read -s password
@@ -67,11 +103,6 @@ function connect_network() {
         if [ $? -ne 0 ]; then
             echo "Failed to connect to $ssid"
             return
-        fi
-
-        if [ -n "$password" ]; then
-            echo "Setting passphrase..."
-            connmanctl config "$network_id" --passphrase "$password"
         fi
 
         echo "Do you want to set the network to autoconnect? (y/n):"
@@ -148,6 +179,12 @@ function remove_autoconnect() {
     echo "$network_id,," >> "$CONFIG_FILE"
 }
 
+# Function to list currently connected networks
+function list_connected_networks() {
+    echo "Currently connected networks:"
+    connmanctl services | grep "^\*AO" | awk '{print $3}'
+}
+
 # Function to display credits
 function display_credits() {
     echo "----------------------------------------"
@@ -159,25 +196,13 @@ function display_credits() {
     echo "----------------------------------------"
 }
 
-# Function to list currently connected networks
-function list_connected_networks() {
-    echo "Currently connected networks:"
-    
-    # List connected networks
-    connmanctl services | awk '
-    # Start reading from the lines where a network is listed
-    /^\*/ { 
-        connected = 1
-        next 
-    }
-    # Print the SSID if we are in a connected network block
-    /^   / && connected { 
-        print $2
-        connected = 0 
-    }'
-}
+# Create config file if it doesn't exist
+if [ ! -f "$CONFIG_FILE" ]; then
+    touch "$CONFIG_FILE"
+fi
 
-
+# Check if ConnMan is active
+check_connman
 
 # Main menu
 while true; do
@@ -186,12 +211,13 @@ while true; do
     echo "----------------------------------------"
     echo "1. Scan WiFi networks"
     echo "2. Connect to a WiFi network"
-    echo "3. Disconnect from a WiFi network"
-    echo "4. Configure autoconnect for a WiFi network"
-    echo "5. Remove autoconnect configuration from a WiFi network"
-    echo "6. List connected networks"
-    echo "7. Credits"
-    echo "8. Exit"
+    echo "3. Connect to autoconnect or next saved network"
+    echo "4. Disconnect from a WiFi network"
+    echo "5. Configure autoconnect for a WiFi network"
+    echo "6. Remove autoconnect configuration from a WiFi network"
+    echo "7. List connected networks"
+    echo "8. Credits"
+    echo "9. Exit"
     echo "----------------------------------------"
     read -p "Choose an option: " option
 
@@ -203,21 +229,24 @@ while true; do
             connect_network
             ;;
         3)
-            disconnect_network
+            connect_autoconnect_network
             ;;
         4)
-            configure_autoconnect
+            disconnect_network
             ;;
         5)
-            remove_autoconnect
+            configure_autoconnect
             ;;
         6)
-            list_connected_networks
+            remove_autoconnect
             ;;
         7)
-            display_credits
+            list_connected_networks
             ;;
         8)
+            display_credits
+            ;;
+        9)
             exit 0
             ;;
         *)

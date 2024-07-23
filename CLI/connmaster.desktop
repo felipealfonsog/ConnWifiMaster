@@ -1,9 +1,9 @@
 [Desktop Entry]
-Version=1.0
+Version=0.0.1
 Type=Application
-Name=ConnWifiMaster CLI
+Name=ConnWifiMaster
 Comment=ConnWifiMaster CLI - ConnMan for network management.
-Exec=terminator -e /usr/local/bin/connmaster-cli
+Exec=terminator -e connmaster-cli
 Icon=connmaster-cli
 Terminal=false
 Categories=Utility;Network;
