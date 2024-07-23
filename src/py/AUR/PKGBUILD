@@ -8,7 +8,7 @@ url="https://github.com/felipealfonsog/ConnWifiMaster"
 license=('BSD-3-Clause')
 depends=('python' 'python-pyqt5')
 source=("https://github.com/felipealfonsog/ConnWifiMaster/archive/refs/tags/v.${pkgver}.tar.gz")
-sha256sums=('a37fbd47489a066868294adfdabd4d3e9876dc89fb6a1a71ff7ac664f224a89e')
+sha256sums=('edb862adfd771d9b478dbc22dd2b8ed2e883b0cafd7bcd00c75a4120ba037246')
 
 prepare() {
   cd "$srcdir"
