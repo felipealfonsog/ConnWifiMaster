@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ConnWifiMaster PyQT5
+Comment=ConnWifiMaster PyQT5 version - ConnMan for network management.
+Exec=connmaster-py
+Icon=connmaster-py
+Terminal=false
+Categories=Utility;Network;

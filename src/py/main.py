@@ -1,7 +1,7 @@
 import sys
 import subprocess
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, QMessageBox, 
-                             QInputDialog, QTextEdit, QLineEdit)
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, 
+                             QInputDialog, QTextEdit, QLineEdit, QMessageBox)
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtCore import Qt
 
@@ -83,7 +83,6 @@ class ConnWifiMasterApp(QWidget):
         # Check if already connected
         status = self.run_command(f"connmanctl services | grep '{network_id}'")
         if "Connected" in status:
-            QMessageBox.information(self, 'Connect to Network', 'Already connected to this network.')
             return
         
         # Try to connect without a password
@@ -98,23 +97,13 @@ class ConnWifiMasterApp(QWidget):
                 result = self.run_command(f"connmanctl tether wifi {network_id} {password}")
             else:
                 result = self.run_command(f"connmanctl connect {network_id}")
-        
-        # Check if the operation was successful
-        if "success" in result.lower() or "connected" in result.lower():
-            QMessageBox.information(self, 'Connect to Network', 'Operation successful.')
-        else:
-            QMessageBox.warning(self, 'Connect to Network', 'Operation not successful. ' + result)
     
     def disconnect_network(self):
         network_id, ok = QInputDialog.getText(self, 'Disconnect from Network', 'Enter Network ID:')
         if not ok or not network_id:
             return
         command = f"connmanctl disconnect {network_id}"
-        result = self.run_command(command)
-        if "success" in result.lower():
-            QMessageBox.information(self, 'Disconnect from Network', 'Operation successful.')
-        else:
-            QMessageBox.warning(self, 'Disconnect from Network', 'Operation not successful. ' + result)
+        self.run_command(command)
     
     def configure_autoconnect(self):
         network_id, ok = QInputDialog.getText(self, 'Configure Autoconnect', 'Enter Network ID:')
@@ -126,7 +115,6 @@ class ConnWifiMasterApp(QWidget):
         status_result = self.run_command(status_command)
         
         if network_id not in status_result:
-            QMessageBox.warning(self, 'Configure Autoconnect', f'Network ID {network_id} not found.')
             return
         
         # Extract current autoconnect status
@@ -138,7 +126,6 @@ class ConnWifiMasterApp(QWidget):
                     current_status = 'yes'
                 break
 
-        # Prompt for new autoconnect status
         autoconnect, ok = QInputDialog.getItem(self, 'Configure Autoconnect', 'Set Autoconnect:', ['yes', 'no'], current_status == 'yes', editable=False)
         if not ok:
             return
@@ -148,30 +135,20 @@ class ConnWifiMasterApp(QWidget):
         
         # Run the command to configure autoconnect
         command = f"connmanctl config {network_id} --autoconnect {autoconnect_value}"
-        result = self.run_command(command)
-        
-        # Check if the operation was successful
-        if "success" in result.lower() or "configured" in result.lower():
-            QMessageBox.information(self, 'Configure Autoconnect', 'Operation successful.')
-        else:
-            QMessageBox.warning(self, 'Configure Autoconnect', f'Operation not successful. Command result: {result}')
-
+        self.run_command(command)
+    
     def connect_saved_network(self):
         command = "while IFS=, read -r network_id password; do if [ -z \"$network_id\" ]; then continue; fi; connmanctl connect \"$network_id\" || connmanctl tether wifi \"$network_id\" \"$password\"; done < ~/.connman_networks"
         result = self.run_command(command)
-        if "success" in result.lower():
-            QMessageBox.information(self, 'Connect to Saved Network', 'Operation successful.')
-        else:
-            QMessageBox.warning(self, 'Connect to Saved Network', 'Operation not successful. ' + result)
+        # Check if any network was successfully connected
+        if "success" in result.lower() or "connected" in result.lower():
+            QMessageBox.information(self, 'Connect to Saved Network', 'Connected to a network successfully.')
     
     def copy_to_clipboard(self):
         selected_text = self.text_edit.textCursor().selectedText()
         if selected_text:
             clipboard = QApplication.clipboard()
             clipboard.setText(selected_text)
-            QMessageBox.information(self, 'Copied to Clipboard', 'Network ID copied to clipboard.')
-        else:
-            QMessageBox.warning(self, 'No Selection', 'No text selected to copy.')
 
     def display_credits(self):
         credits = (
