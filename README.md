@@ -204,6 +204,40 @@ You can find ConnWifiMaster App in your program menu!
 
 #
 
+
+#### Installation (Python/PyQT5 version for Arch Linux)*
+#### Via AUR using YAY
+
+[![AUR](https://img.shields.io/aur/version/connmaster-py)](https://aur.archlinux.org/packages/connmaster-py)
+
+<!-- 
+[![AUR](https://img.shields.io/aur/version/connmaster-py.svg)](https://aur.archlinux.org/packages/connmaster-py)
+-->
+
+<!-- 
+https://aur.archlinux.org/packages/connmaster-py
+-->
+
+ConnWifiMaster Python/PyQT5 (connmaster on AUR) is available on AUR (Arch User Repository), and it can be installed using the `yay` package manager. Follow the steps below to install:
+
+1. Make sure you have `yay` installed. If not, you can install it with the following command:
+   
+   ```
+   sudo pacman -S yay
+   ```
+   Once yay is installed, you can install it by running the following command:
+   
+   ```
+   yay -S connmaster-py
+   ```
+This command will automatically fetch the package from AUR and handle the installation process for you.
+You can find ConnWifiMaster App in your program menu!
+
+
+#
+
+
+
 #### Bash Installer 🚀 
 
 [![Bash Version](https://img.shields.io/badge/Bash%20Version-Available-brightgreen)](#)
