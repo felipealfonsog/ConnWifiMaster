@@ -74,7 +74,7 @@ You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
 
 #
 
-#### Bash program - for terminals
+#### CLI program*
 
 <p align="center">
   <img src="./images/connmaster-bash.png" alt="Screenshot Linux" width="400" height="350">
@@ -101,6 +101,7 @@ You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
    ```
    ./Connmaster-CLI.sh
    ```
+<sub>* This project is still under development. Future updates may include changes, and screenshots may not accurately reflect the final design.</sub>
 
 #
 
@@ -166,7 +167,7 @@ sudo pacman -S python-pyqt5 python connman
   <img src="./images/connman-only-arch.png" alt="Screenshot Linux" width="400" height="350">
 </p>
 
-
+<sub>* This project is still under development. Future updates may include changes to the GUI, and screenshots may not accurately reflect the final design.</sub>
 #
 
 #### Installation (Special version for Arch Linux)*
