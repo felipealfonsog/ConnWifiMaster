@@ -76,6 +76,8 @@ You can find ConnWifiMaster CLI App in your program menu! or using the terminal.
 
 #### CLI program*
 
+[![CLI Version](https://img.shields.io/badge/CLI%20Version-Available-brightgreen)](#)
+
 <p align="center">
   <img src="./images/connmaster-bash.png" alt="Screenshot Linux" width="400" height="350">
 </p>
