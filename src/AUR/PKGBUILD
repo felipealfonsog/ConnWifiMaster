@@ -1,6 +1,6 @@
 # Maintainer: Felipe Alfonso Gonzalez <f.alfonso@res-ear.ch>
 pkgname=connmaster
-pkgver=0.0.2
+pkgver=0.0.7
 pkgrel=1
 pkgdesc="ConnWifiMaster is a graphical application designed for Arch Linux systems that use ConnMan for network management. Developed with GTK in C."
 arch=('x86_64')
