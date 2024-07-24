@@ -1,14 +1,17 @@
 CC = gcc
 CFLAGS = `pkg-config --cflags gtk+-3.0`
 LDFLAGS = `pkg-config --libs gtk+-3.0`
-TARGET = connwifimaster
-SRC_DIR = src
-SRC = $(SRC_DIR)/main.c $(SRC_DIR)/connman.c
+SOURCES = src/main.c src/connman.c
+OBJECTS = $(SOURCES:.c=.o)
+EXECUTABLE = connwifimaster
 
-all: $(TARGET)
+all: $(SOURCES) $(EXECUTABLE)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LDFLAGS)
+$(EXECUTABLE): $(OBJECTS)
+    $(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+
+.c.o:
+    $(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET)
+    rm -f $(OBJECTS) $(EXECUTABLE)

@@ -1,96 +1,211 @@
 #include <gtk/gtk.h>
 #include "connman.h"
 
-static void on_connect_clicked(GtkButton *button, gpointer user_data) {
-    GtkTreeView *tree_view = GTK_TREE_VIEW(user_data);
-    GtkTreeModel *model = gtk_tree_view_get_model(tree_view);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(tree_view);
-    GtkTreeIter iter;
-    gchar *network_name;
+static GtkWidget *text_view;
+static GtkTextBuffer *text_buffer;
 
-    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        gtk_tree_model_get(model, &iter, 0, &network_name, -1);
-        connect_to_network(GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))), network_name);
-        g_free(network_name);
+static void append_text(const char *text) {
+    if (text != NULL) {
+        GtkTextIter end;
+        gtk_text_buffer_get_end_iter(text_buffer, &end);
+        gtk_text_buffer_insert(text_buffer, &end, text, -1);
+    } else {
+        gtk_text_buffer_set_text(text_buffer, "Error: No text to display.\n", -1);
     }
 }
 
-static void on_disconnect_clicked(GtkButton *button, gpointer user_data) {
-    GtkTreeView *tree_view = GTK_TREE_VIEW(user_data);
-    GtkTreeModel *model = gtk_tree_view_get_model(tree_view);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(tree_view);
-    GtkTreeIter iter;
-    gchar *network_name;
-
-    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        gtk_tree_model_get(model, &iter, 0, &network_name, -1);
-        disconnect_from_network(network_name);
-        g_free(network_name);
+static void scan_networks(GtkWidget *widget, gpointer data) {
+    char *output = run_command("connmanctl scan wifi && connmanctl services");
+    if (output != NULL) {
+        gtk_text_buffer_set_text(text_buffer, output, -1);
+        free(output);
+    } else {
+        gtk_text_buffer_set_text(text_buffer, "Error: Failed to scan networks.\n", -1);
     }
 }
 
-static void on_autoconnect_toggled(GtkToggleButton *toggle_button, gpointer user_data) {
-    GtkTreeView *tree_view = GTK_TREE_VIEW(user_data);
-    GtkTreeModel *model = gtk_tree_view_get_model(tree_view);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(tree_view);
-    GtkTreeIter iter;
-    gchar *network_name;
+static void connect_network(GtkWidget *widget, gpointer data) {
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    const char *network_id;
+    
+    dialog = gtk_dialog_new_with_buttons("Connect to Network",
+                                         GTK_WINDOW(data),
+                                         GTK_DIALOG_MODAL,
+                                         "_OK", GTK_RESPONSE_OK,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         NULL);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    entry = gtk_entry_new();
+    gtk_container_add(GTK_CONTAINER(content_area), entry);
+    gtk_widget_show_all(dialog);
 
-    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        gtk_tree_model_get(model, &iter, 0, &network_name, -1);
-        set_autoconnect(network_name, gtk_toggle_button_get_active(toggle_button));
-        g_free(network_name);
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+        network_id = gtk_entry_get_text(GTK_ENTRY(entry));
+        char command[256];
+        snprintf(command, sizeof(command), "connmanctl connect %s", network_id);
+        char *output = run_command(command);
+        append_text(output);
+        free(output);
     }
+    gtk_widget_destroy(dialog);
+}
+
+static void disconnect_network(GtkWidget *widget, gpointer data) {
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    const char *network_id;
+    
+    dialog = gtk_dialog_new_with_buttons("Disconnect from Network",
+                                         GTK_WINDOW(data),
+                                         GTK_DIALOG_MODAL,
+                                         "_OK", GTK_RESPONSE_OK,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         NULL);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    entry = gtk_entry_new();
+    gtk_container_add(GTK_CONTAINER(content_area), entry);
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+        network_id = gtk_entry_get_text(GTK_ENTRY(entry));
+        char command[256];
+        snprintf(command, sizeof(command), "connmanctl disconnect %s", network_id);
+        char *output = run_command(command);
+        append_text(output);
+        free(output);
+    }
+    gtk_widget_destroy(dialog);
+}
+
+static void configure_autoconnect(GtkWidget *widget, gpointer data) {
+    GtkWidget *dialog;
+    GtkWidget *content_area;
+    GtkWidget *entry;
+    const char *network_id;
+    GtkWidget *checkbox;
+    gboolean autoconnect;
+
+    dialog = gtk_dialog_new_with_buttons("Configure Autoconnect",
+                                         GTK_WINDOW(data),
+                                         GTK_DIALOG_MODAL,
+                                         "_OK", GTK_RESPONSE_OK,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         NULL);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    entry = gtk_entry_new();
+    gtk_container_add(GTK_CONTAINER(content_area), entry);
+
+    checkbox = gtk_check_button_new_with_label("Enable Autoconnect");
+    gtk_container_add(GTK_CONTAINER(content_area), checkbox);
+    
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+        network_id = gtk_entry_get_text(GTK_ENTRY(entry));
+        autoconnect = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox));
+        char command[256];
+        snprintf(command, sizeof(command), "connmanctl config %s --autoconnect %s", network_id, autoconnect ? "yes" : "no");
+        char *output = run_command(command);
+        append_text(output);
+        free(output);
+    }
+    gtk_widget_destroy(dialog);
+}
+
+static void connect_saved_network(GtkWidget *widget, gpointer data) {
+    char *output = run_command("while IFS=, read -r network_id password; do if [ -z \"$network_id\" ]; then continue; fi; connmanctl connect \"$network_id\" || connmanctl tether wifi \"$network_id\" \"$password\"; done < ~/.connman_networks");
+    append_text(output);
+    free(output);
+}
+
+static void copy_to_clipboard(GtkWidget *widget, gpointer data) {
+    GtkClipboard *clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_selection_bounds(text_buffer, &start, &end);
+    char *text = gtk_text_buffer_get_text(text_buffer, &start, &end, FALSE);
+    gtk_clipboard_set_text(clipboard, text, -1);
+    g_free(text);
+}
+
+static void display_credits(GtkWidget *widget, gpointer data) {
+    GtkWidget *dialog;
+    dialog = gtk_message_dialog_new(GTK_WINDOW(data),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "***************************************************\n"
+                                    "ConnWifiMaster GUI - ConnMan Network Manager\n"
+                                    "___________________________________________________\n"
+                                    "By Computer Science Engineer:\n"
+                                    "Felipe Alfonso González\n"
+                                    "f.alfonso@res-ear.ch - github.com/felipealfonsog\n"
+                                    "***************************************************");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
 
 int main(int argc, char *argv[]) {
+    GtkWidget *window;
+    GtkWidget *vbox;
+    GtkWidget *button;
+    
     gtk_init(&argc, &argv);
-
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "ConnWifiMaster");
+    
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "ConnWifiMaster GUI");
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(window), vbox);
-
-    GtkWidget *tree_view = gtk_tree_view_new();
-    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), GTK_TREE_MODEL(store));
-
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("Network", renderer, "text", 0, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-
-    column = gtk_tree_view_column_new_with_attributes("Signal", renderer, "text", 1, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-
-    column = gtk_tree_view_column_new_with_attributes("Protected", renderer, "text", 2, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-
-    gtk_box_pack_start(GTK_BOX(vbox), tree_view, TRUE, TRUE, 0);
-
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
-    GtkWidget *connect_button = gtk_button_new_with_label("Connect");
-    g_signal_connect(connect_button, "clicked", G_CALLBACK(on_connect_clicked), tree_view);
-    gtk_box_pack_start(GTK_BOX(hbox), connect_button, TRUE, TRUE, 0);
-
-    GtkWidget *disconnect_button = gtk_button_new_with_label("Disconnect");
-    g_signal_connect(disconnect_button, "clicked", G_CALLBACK(on_disconnect_clicked), tree_view);
-    gtk_box_pack_start(GTK_BOX(hbox), disconnect_button, TRUE, TRUE, 0);
-
-    GtkWidget *autoconnect_button = gtk_check_button_new_with_label("Auto Connect");
-    g_signal_connect(autoconnect_button, "toggled", G_CALLBACK(on_autoconnect_toggled), tree_view);
-    gtk_box_pack_start(GTK_BOX(hbox), autoconnect_button, TRUE, TRUE, 0);
-
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    load_wifi_networks(store);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+
+    button = gtk_button_new_with_label("Scan/List WiFi networks");
+    g_signal_connect(button, "clicked", G_CALLBACK(scan_networks), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Connect to a WiFi network");
+    g_signal_connect(button, "clicked", G_CALLBACK(connect_network), window);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Disconnect from a WiFi network");
+    g_signal_connect(button, "clicked", G_CALLBACK(disconnect_network), window);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Enable/Disable autoconnect");
+    g_signal_connect(button, "clicked", G_CALLBACK(configure_autoconnect), window);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Connect to a saved WiFi network");
+    g_signal_connect(button, "clicked", G_CALLBACK(connect_saved_network), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Copy Network ID to Clipboard");
+    g_signal_connect(button, "clicked", G_CALLBACK(copy_to_clipboard), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Credits");
+    g_signal_connect(button, "clicked", G_CALLBACK(display_credits), window);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label("Exit");
+    g_signal_connect(button, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+
+    text_view = gtk_text_view_new();
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text_view), FALSE);
+    text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), text_view);
+    gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 0);
 
     gtk_widget_show_all(window);
+    
     gtk_main();
-
+    
     return 0;
 }
